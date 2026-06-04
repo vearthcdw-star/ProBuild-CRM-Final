@@ -176,6 +176,26 @@ nav{flex:1;padding:7px 6px;overflow-y:auto;}
 .del-countdown{width:52px;height:52px;border-radius:50%;background:var(--redDim);border:3px solid #E8424A;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#E8424A;margin:0 auto 14px;font-family:'DM Mono',monospace;}
 #restore-bar{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);z-index:9998;background:#1A1040;border:1px solid #8C6EFF;border-radius:12px;padding:10px 20px;align-items:center;gap:12px;box-shadow:0 8px 32px #00000080;display:none;}
 #restore-bar.show{display:flex;}
+
+/* ===== HOLIDAY THEMES ===== */
+#holiday-banner{display:none;align-items:center;justify-content:center;gap:10px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;color:#fff;text-align:center;position:relative;overflow:hidden;}
+body.hol-july4 #holiday-banner{display:flex;background:linear-gradient(90deg,#B22234 0%,#B22234 33%,#FFFFFF 33%,#FFFFFF 66%,#3C3B6E 66%,#3C3B6E 100%);color:#fff;text-shadow:0 1px 3px #000;}
+body.hol-juneteenth #holiday-banner{display:flex;background:linear-gradient(90deg,#E51B24,#000000 50%,#1B7A3D);color:#FFD700;}
+body.hol-christmas #holiday-banner{display:flex;background:linear-gradient(90deg,#C8102E,#0B6623);color:#FFD700;}
+body.hol-hanukkah #holiday-banner{display:flex;background:linear-gradient(90deg,#0038B8,#FFFFFF 50%,#0038B8);color:#0038B8;text-shadow:0 0 2px #fff;}
+body.hol-newyear #holiday-banner{display:flex;background:linear-gradient(90deg,#1A1A1A,#C9952A,#1A1A1A);color:#FFD700;}
+body.hol-rosh #holiday-banner{display:flex;background:linear-gradient(90deg,#7B1E22,#C9952A);color:#FFF8E7;}
+body.hol-yom #holiday-banner{display:flex;background:linear-gradient(90deg,#FFFFFF,#0038B8,#FFFFFF);color:#0A2A5E;}
+body.hol-thanksgiving #holiday-banner{display:flex;background:linear-gradient(90deg,#8B4513,#D2691E,#C9952A);color:#FFF8E7;}
+body.hol-memorial #holiday-banner{display:flex;background:linear-gradient(90deg,#3C3B6E,#B22234);color:#fff;}
+body.hol-labor #holiday-banner{display:flex;background:linear-gradient(90deg,#1B5FAA,#0D3060);color:#fff;}
+body.hol-mlk #holiday-banner{display:flex;background:linear-gradient(90deg,#2C1810,#C9952A);color:#FFF8E7;}
+body.hol-veterans #holiday-banner{display:flex;background:linear-gradient(90deg,#B22234,#FFFFFF 50%,#3C3B6E);color:#1A1A1A;text-shadow:0 0 2px #fff;}
+.hol-emoji{font-size:15px;}
+#theme-menu{display:none;position:absolute;top:42px;right:14px;background:var(--navyCard);border:1px solid var(--navyBorder);border-radius:10px;padding:6px;z-index:950;box-shadow:0 12px 40px #000000a0;max-height:70vh;overflow-y:auto;width:200px;}
+#theme-menu.open{display:block;}
+.theme-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--white);font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.theme-opt:hover{background:var(--navyHover);}
 </style>
 </head>
 <body>
@@ -245,6 +265,22 @@ nav{flex:1;padding:7px 6px;overflow-y:auto;}
     <span id="tb-label" style="color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.08em;">DASHBOARD</span>
     <span style="color:var(--dimmed);">&middot;</span>
     <span id="tb-date" style="color:var(--dimmed);font-size:11px;font-family:'DM Mono',monospace;"></span>
+    <button id="theme-btn" onclick="event.stopPropagation();document.getElementById('theme-menu').classList.toggle('open');" style="background:none;border:1px solid var(--navyBorder);border-radius:20px;padding:6px 12px;color:var(--gold);cursor:pointer;font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-left:auto;">&#127881; THEME</button>
+  <div id="theme-menu">
+    <div class="theme-opt" onclick="setHolidayTheme('')">&#9711; Normal (No Theme)</div>
+    <div class="theme-opt" onclick="setHolidayTheme('july4')">&#127879; Fourth of July</div>
+    <div class="theme-opt" onclick="setHolidayTheme('juneteenth')">&#9989; Juneteenth</div>
+    <div class="theme-opt" onclick="setHolidayTheme('mlk')">&#9774; MLK Day</div>
+    <div class="theme-opt" onclick="setHolidayTheme('memorial')">&#127482;&#127480; Memorial Day</div>
+    <div class="theme-opt" onclick="setHolidayTheme('labor')">&#128296; Labor Day</div>
+    <div class="theme-opt" onclick="setHolidayTheme('veterans')">&#127881; Veterans Day</div>
+    <div class="theme-opt" onclick="setHolidayTheme('thanksgiving')">&#127817; Thanksgiving</div>
+    <div class="theme-opt" onclick="setHolidayTheme('christmas')">&#127876; Christmas</div>
+    <div class="theme-opt" onclick="setHolidayTheme('hanukkah')">&#128367; Hanukkah</div>
+    <div class="theme-opt" onclick="setHolidayTheme('rosh')">&#127822; Rosh Hashanah</div>
+    <div class="theme-opt" onclick="setHolidayTheme('yom')">&#10024; Yom Kippur</div>
+    <div class="theme-opt" onclick="setHolidayTheme('newyear')">&#127878; New Year</div>
+  </div>
     <button id="send-login-btn" style="display:none;background:linear-gradient(135deg,#1B5FAA,#0D3060);border:none;border-radius:20px;padding:7px 14px;color:white;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;cursor:pointer;align-items:center;gap:6px;white-space:nowrap;" onclick="showSendCustomerLogin()">&#128279; SEND CUSTOMER LOGIN</button>
         <span id="demo-badge" style="display:none;background:var(--goldDim);color:var(--gold);border:1px solid #C9952A40;border-radius:4px;padding:2px 7px;font-size:9px;font-family:'DM Mono',monospace;font-weight:700;margin-left:6px;">DEMO MODE</span>
   </div>
@@ -264,7 +300,8 @@ nav{flex:1;padding:7px 6px;overflow-y:auto;}
     <button id="ai-toggle" onclick="toggleAI()" style="background:var(--navyHover);border:1px solid var(--navyBorder);border-radius:8px;padding:6px 13px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;font-size:12px;display:flex;align-items:center;gap:5px;transition:all .2s;">&#10022; AI ASSIST</button>
   </div>
 </div>
-<div id="content"><div id="mc" class="fade-in"></div></div>
+<div id="content"><div id="holiday-banner"><span class="hol-emoji" id="hol-emoji-l">&#127881;</span><span id="holiday-text">HAPPY HOLIDAYS — California Deluxe Windows</span><span class="hol-emoji" id="hol-emoji-r">&#127881;</span></div>
+<div id="mc" class="fade-in"></div></div>
 </div>
 <div id="ai-panel">
 <div style="padding:13px 16px;border-bottom:1px solid var(--navyBorder);display:flex;justify-content:space-between;align-items:center;background:var(--navy);">
@@ -524,17 +561,7 @@ function doRestore(){
 
 
 // ── SHOW SEND CUSTOMER LOGIN ───────────────────────────────
-document.addEventListener('DOMContentLoaded',function(){
-  var params=new URLSearchParams(window.location.search);
-  if(params.get('mode')==='customer'){
-    demoMode=false;
-    var dtog=document.getElementById('dtog');if(dtog)dtog.style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    var wo=params.get('wo');
-    if(wo){var lu=document.getElementById('lu');if(lu)lu.value=wo;}
-  }
-});
+/* customer-mode handled by setupCustomerLogin in auto-launch */
 
 function showSendCustomerLogin(){
   var isMgr=CU&&(CU.access==='all'||CU.access==='management'||CU.access==='operations');
@@ -551,7 +578,7 @@ function showSendCustomerLogin(){
     '<div id="scl-preview" style="display:none;background:var(--navyHover);border:1px solid var(--navyBorder);border-radius:8px;padding:11px;margin-bottom:12px;">'+
     '<div style="font-size:9px;color:var(--muted);font-family:monospace;margin-bottom:4px;">PORTAL LINK</div>'+
     '<div id="scl-url" style="font-size:10px;color:#22C5C5;font-family:monospace;word-break:break-all;margin-bottom:6px;"></div>'+
-    '<div style="font-size:9px;color:var(--dimmed);font-family:monospace;">Login: WO# or phone &middot; Password: phone number</div></div>'+
+    '<div style="font-size:9px;color:var(--dimmed);font-family:monospace;">Login: WO# or phone &middot; Just your Work Order # or phone</div></div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">'+
     '<button id="scl-copy" style="background:#1B5FAA;border:none;border-radius:8px;padding:10px;color:white;font-size:12px;font-weight:800;cursor:pointer;">&#128203; COPY</button>'+
     '<button id="scl-sms" style="background:#1DB954;border:none;border-radius:8px;padding:10px;color:#08111F;font-size:12px;font-weight:800;cursor:pointer;">&#128241; SMS</button>'+
@@ -563,7 +590,7 @@ function showSendCustomerLogin(){
     if(!sel||!sel.value)return null;
     var l=LEADS.find(function(l){return l.id===sel.value;});
     if(!l)return null;
-    return window.location.origin+window.location.pathname+'?mode=customer&wo='+encodeURIComponent(l.woNum||l.id)+'&name='+encodeURIComponent(l.name);
+    return 'https://keen-rabanadas-21a228.netlify.app/?mode=customer&wo='+encodeURIComponent(l.woNum||l.id)+'&name='+encodeURIComponent(l.name);
   }
   document.getElementById('scl-x').onclick=function(){ov.remove();};
   document.getElementById('scl-cancel').onclick=function(){ov.remove();};
@@ -572,8 +599,8 @@ function showSendCustomerLogin(){
     if(url&&prev&&urlEl){prev.style.display='block';urlEl.textContent=url;}else if(prev)prev.style.display='none';
   };
   document.getElementById('scl-copy').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}navigator.clipboard.writeText(url).then(function(){fireNotif('Link copied!','success');});ov.remove();};
-  document.getElementById('scl-sms').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});var msg='Hi '+(l?l.name.split(' ')[0]:'there')+', your CDW portal: '+url+' Login: WO# or phone. Password: phone #.';window.open('sms:'+(l&&l.phone?encodeURIComponent(l.phone):'')+' ?body='+encodeURIComponent(msg));ov.remove();};
-  document.getElementById('scl-email').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});window.open('mailto:'+(l&&l.email?encodeURIComponent(l.email):'')+' ?subject=Your+CDW+Portal&body='+encodeURIComponent('Hi '+(l?l.name.split(' ')[0]:'there')+',\n\nYour CDW portal: '+url+'\n\nLogin: WO# or phone. Password: phone #.'));ov.remove();};
+  document.getElementById('scl-sms').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});var msg='Hi '+(l?l.name.split(' ')[0]:'there')+', your CDW portal: '+url+' Log in with your Work Order # or phone number.';window.open('sms:'+(l&&l.phone?encodeURIComponent(l.phone):'')+' ?body='+encodeURIComponent(msg));ov.remove();};
+  document.getElementById('scl-email').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});window.open('mailto:'+(l&&l.email?encodeURIComponent(l.email):'')+' ?subject=Your+CDW+Portal&body='+encodeURIComponent('Hi '+(l?l.name.split(' ')[0]:'there')+',\n\nYour CDW portal: '+url+'\n\nLog in with your Work Order # or phone number.'));ov.remove();};
 }
 
 // ── REFERRAL ────────────────────────────────────────────
@@ -775,8 +802,9 @@ function populateUserSwitcher(){
   });
 }
 
-// AUTO-LAUNCH: No login required for CDW platform
+// AUTO-LAUNCH: No login required for CDW platform (skip for homeowner customer mode)
 document.addEventListener('DOMContentLoaded',function(){
+  if(new URLSearchParams(window.location.search).get('mode')==='customer'){ setupCustomerLogin(); return; }
   CU={...USERS['cdw2026em'], username:'cdw2026em'};
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -798,17 +826,7 @@ window._restoreFn=null;
 
 
 // ── SHOW SEND CUSTOMER LOGIN ───────────────────────────────
-document.addEventListener('DOMContentLoaded',function(){
-  var params=new URLSearchParams(window.location.search);
-  if(params.get('mode')==='customer'){
-    demoMode=false;
-    var dtog=document.getElementById('dtog');if(dtog)dtog.style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    var wo=params.get('wo');
-    if(wo){var lu=document.getElementById('lu');if(lu)lu.value=wo;}
-  }
-});
+/* customer-mode handled by setupCustomerLogin in auto-launch */
 
 
 
@@ -1372,7 +1390,7 @@ function rDocs(){
       const tc={Contract:['#1B5FAA','#0D3060'],'HOA Correspondence':['#E8B84B','#3A2800'],Permit:['#7C5CEF','#1A1040'],'Installation Sign-Off':['#1DB954','#0A2818'],'Warranty Certificate':['#10B981','#042818'],'Measurement Report':['#22C5C5','#081E1E']};
       const isPh=doc.type?.includes('Photo');
       const [c2,bg2]=tc[doc.type]||[isPh?'#C9952A':'#7A8FA8',isPh?'#3A2800':'#0D1B2E'];
-      h+='<div style="background:#1A2E48;border-radius:10px;padding:13px;border:1px solid #162540;display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><span style="font-size:24px;">'+(doc.icon||'📄')+'</span><span style="background:'+bg2+';color:'+c2+';border:1px solid '+c2+'40;border-radius:4px;padding:1px 6px;font-size:8px;font-family:\'DM Mono\',monospace;font-weight:800;">'+(doc.type||'DOC').toUpperCase()+'</span></div><div style="color:#F0F5FF;font-size:10px;font-weight:700;word-break:break-all;">'+doc.name+'</div><div style="color:#7A8FA8;font-size:9px;">'+doc.projectName+'</div><div class="ts">'+doc.uploadedBy+' &middot; '+(doc.role||'')+'</div><div class="ts">'+doc.ts+'</div>'+(doc.size&&doc.size!=='—'?'<div style="color:#3A4F68;font-size:9px;">'+doc.size+'</div>':'')+'<div style="display:flex;gap:4px;margin-top:2px;"><button onclick="fireNotif(\'Opening: '+doc.name+'\',\'success\');" style="background:none;border:1px solid #1B5FAA;color:#1B5FAA;border-radius:6px;padding:3px 8px;font-size:9px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;">VIEW</button><button onclick="fireNotif(\'Downloading: '+doc.name+'\',\'success\');" class="btn btn-sm btn-ghost" style="font-size:9px;padding:3px 7px;">&darr;</button></div></div>';
+      h+='<div style="background:#1A2E48;border-radius:10px;padding:13px;border:1px solid #162540;display:flex;flex-direction:column;gap:5px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><span style="font-size:24px;">'+(doc.icon||'📄')+'</span><span style="background:'+bg2+';color:'+c2+';border:1px solid '+c2+'40;border-radius:4px;padding:1px 6px;font-size:8px;font-family:\'DM Mono\',monospace;font-weight:800;">'+(doc.type||'DOC').toUpperCase()+'</span></div><div style="color:#F0F5FF;font-size:10px;font-weight:700;word-break:break-all;">'+doc.name+'</div><div style="color:#7A8FA8;font-size:9px;">'+doc.projectName+'</div><div class="ts">'+doc.uploadedBy+' &middot; '+(doc.role||'')+'</div><div class="ts">'+doc.ts+'</div>'+(doc.size&&doc.size!=='—'?'<div style="color:#3A4F68;font-size:9px;">'+doc.size+'</div>':'')+'<div style="display:flex;gap:4px;margin-top:2px;"><button data-dn="'+doc.name+'" onclick="docToast(this)" style="background:none;border:1px solid #1B5FAA;color:#1B5FAA;border-radius:6px;padding:3px 8px;font-size:9px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;">VIEW</button><button onclick="docDownloadNote()" class="btn btn-sm btn-ghost" style="font-size:9px;padding:3px 7px;">&darr;</button></div></div>';
     });
     h+='</div>';
   }
@@ -1561,17 +1579,7 @@ window._restoreFn=null;
 
 
 // ── SHOW SEND CUSTOMER LOGIN ───────────────────────────────
-document.addEventListener('DOMContentLoaded',function(){
-  var params=new URLSearchParams(window.location.search);
-  if(params.get('mode')==='customer'){
-    demoMode=false;
-    var dtog=document.getElementById('dtog');if(dtog)dtog.style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    var wo=params.get('wo');
-    if(wo){var lu=document.getElementById('lu');if(lu)lu.value=wo;}
-  }
-});
+/* customer-mode handled by setupCustomerLogin in auto-launch */
 
 
 
@@ -1607,21 +1615,8 @@ window._restoreFn=null;
 
 
 
-// AUTO-LAUNCH: No login required for CDW platform
-document.addEventListener('DOMContentLoaded',function(){
-  CU={...USERS['cdw2026em'], username:'cdw2026em'};
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  document.getElementById('dtog').style.display='flex';
-  document.getElementById('su-name').textContent=CU.name;
-  document.getElementById('su-role').textContent=CU.title;
-  document.getElementById('su-av').textContent=CU.initials;
-  const cnAL=document.getElementById('nb-commission');
-  if(cnAL)cnAL.style.display='none';
-  toggleDemo();
-  nav('dashboard');
-  if(typeof populateUserSwitcher==='function')populateUserSwitcher();
-});
+// AUTO-LAUNCH: No login required for CDW platform (skip for homeowner customer mode)
+document.
 
 // ── RESTORE / UNDO ─────────────────────────────────────
 window._restoreFn=null;
@@ -1630,17 +1625,7 @@ window._restoreFn=null;
 
 
 // ── SHOW SEND CUSTOMER LOGIN ───────────────────────────────
-document.addEventListener('DOMContentLoaded',function(){
-  var params=new URLSearchParams(window.location.search);
-  if(params.get('mode')==='customer'){
-    demoMode=false;
-    var dtog=document.getElementById('dtog');if(dtog)dtog.style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('app').style.display='none';
-    var wo=params.get('wo');
-    if(wo){var lu=document.getElementById('lu');if(lu)lu.value=wo;}
-  }
-});
+/* customer-mode handled by setupCustomerLogin in auto-launch */
 
 
 
@@ -1739,6 +1724,7 @@ function resetTeamPw(uname){
 }
 
 window.addEventListener('DOMContentLoaded',function(){
+  if(new URLSearchParams(window.location.search).get('mode')==='customer'){ return; }
   document.getElementById('tb-date').textContent=todayStr();
   // Commission nav hidden from manny
   const cn=document.getElementById('nb-commission');
@@ -1749,14 +1735,186 @@ window.addEventListener('DOMContentLoaded',function(){
   populateUserSwitcher();
 });
 
+
+function setHolidayTheme(theme){
+  var b=document.body;
+  // remove all hol- classes
+  b.className=b.className.split(' ').filter(function(x){return x.indexOf('hol-')!==0;}).join(' ');
+  var labels={july4:['\uD83C\uDF87','HAPPY FOURTH OF JULY \u2014 California Deluxe Windows'],
+    juneteenth:['\u2705','HAPPY JUNETEENTH \u2014 Celebrating Freedom'],
+    mlk:['\u262E','HONORING DR. MARTIN LUTHER KING JR.'],
+    memorial:['\uD83C\uDDFA\uD83C\uDDF8','MEMORIAL DAY \u2014 Honoring Those Who Served'],
+    labor:['\uD83D\uDD28','HAPPY LABOR DAY'],
+    veterans:['\uD83C\uDF96','THANK YOU VETERANS'],
+    thanksgiving:['\uD83E\uDD83','HAPPY THANKSGIVING'],
+    christmas:['\uD83C\uDF84','MERRY CHRISTMAS \u2014 California Deluxe Windows'],
+    hanukkah:['\uD83D\uDD6F\uFE0F','HAPPY HANUKKAH'],
+    rosh:['\uD83C\uDF4E','SHANAH TOVAH \u2014 Happy Rosh Hashanah'],
+    yom:['\u2728','G\u2019MAR CHATIMAH TOVAH \u2014 Yom Kippur'],
+    newyear:['\uD83C\uDF86','HAPPY NEW YEAR \u2014 California Deluxe Windows']};
+  if(theme && labels[theme]){
+    b.classList.add('hol-'+theme);
+    document.getElementById('hol-emoji-l').innerHTML=labels[theme][0];
+    document.getElementById('hol-emoji-r').innerHTML=labels[theme][0];
+    document.getElementById('holiday-text').textContent=labels[theme][1];
+  }
+  var menu=document.getElementById('theme-menu');if(menu)menu.classList.remove('open');
+}
+
+function autoDetectHoliday(){
+  var d=new Date();var m=d.getMonth()+1;var day=d.getDate();
+  // Fixed-date holidays
+  if(m===7 && day<=7) return 'july4';
+  if(m===6 && day>=17 && day<=20) return 'juneteenth';
+  if(m===12 && day>=18) return 'christmas';
+  if(m===12 && day<=2) return 'christmas';
+  if((m===12 && day>=29)||(m===1 && day<=2)) return 'newyear';
+  if(m===11 && day>=10 && day<=12) return 'veterans';
+  if(m===11 && day>=22 && day<=28) return 'thanksgiving';
+  if(m===5 && day>=25) return 'memorial';
+  if(m===9 && day<=7) return 'labor';
+  if(m===1 && day>=15 && day<=21) return 'mlk';
+  return '';
+}
+
+// Close theme menu on outside click
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('theme-menu');var btn=document.getElementById('theme-btn');
+  if(menu&&menu.classList.contains('open')&&e.target!==btn&&!menu.contains(e.target)){menu.classList.remove('open');}
+});
+
+// Auto-apply on load
+window.addEventListener('DOMContentLoaded',function(){
+  var auto=autoDetectHoliday();
+  if(auto)setHolidayTheme(auto);
+});
+
+
+function viewDocRecord(name){
+  var ov=document.createElement('div');ov.className='modal-overlay';ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+  // find the doc across DOCS
+  var found=null,proj=null;
+  for(var pid in DOCS){(DOCS[pid]||[]).forEach(function(d){if(d.name===name){found=d;proj=pid;}});}
+  var L=(typeof LEADS!=='undefined')?LEADS.find(function(l){return l.id===proj;}):null;
+  var rows='';
+  if(found){
+    rows+='<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;font-size:12px;">';
+    rows+='<div style="color:#7A8FA8;">File:</div><div style="color:#F0F5FF;">'+found.name+'</div>';
+    rows+='<div style="color:#7A8FA8;">Type:</div><div style="color:#1B5FAA;font-weight:700;">'+(found.type||'—')+'</div>';
+    if(found.size&&found.size!=='—')rows+='<div style="color:#7A8FA8;">Size:</div><div style="color:#F0F5FF;">'+found.size+'</div>';
+    rows+='<div style="color:#7A8FA8;">Uploaded by:</div><div style="color:#F0F5FF;">'+(found.by||'—')+'</div>';
+    rows+='<div style="color:#7A8FA8;">Timestamp:</div><div style="color:#1DB954;font-family:\'DM Mono\',monospace;">'+(found.ts||'—')+'</div>';
+    if(L)rows+='<div style="color:#7A8FA8;">Project:</div><div style="color:#F0F5FF;">'+L.name+' ('+(L.woNum||L.id)+')</div>';
+    rows+='</div>';
+  } else { rows='<div style="color:#7A8FA8;font-size:12px;">Record not found.</div>'; }
+  ov.innerHTML='<div class="modal" style="max-width:420px;" onclick="event.stopPropagation()">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'+
+    '<div style="color:#F0F5FF;font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;">&#128196; DOCUMENT RECORD</div>'+
+    '<button onclick="this.closest(\'.modal-overlay\').remove()" style="background:none;border:none;color:#7A8FA8;cursor:pointer;font-size:18px;">&times;</button></div>'+
+    rows+
+    '<div style="margin-top:14px;padding:9px 11px;background:#0A1628;border:1px solid #2B4366;border-radius:8px;font-size:10px;color:#5A7290;font-family:\'DM Mono\',monospace;">This is a tracking record. The document detail is logged here; the physical file is stored in your document system.</div>'+
+    '<button onclick="this.closest(\'.modal-overlay\').remove()" style="width:100%;margin-top:12px;background:#1B5FAA;border:none;border-radius:8px;padding:10px;color:#fff;font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">CLOSE</button>'+
+    '</div>';
+  document.body.appendChild(ov);
+}
+
+
+function docToast(btn){
+  var n=btn.getAttribute('data-dn')||'document';
+  if(typeof fireNotif==='function')fireNotif('Document on file: '+n,'success');
+}
+
+
+function docDownloadNote(){ if(typeof fireNotif==='function')fireNotif('Tracking record on file','info'); }
+
+
+// ── HOMEOWNER CUSTOMER-MODE LOGIN ─────────────────────────────
+function isCustomerMode(){
+  return new URLSearchParams(window.location.search).get('mode')==='customer';
+}
+
+function setupCustomerLogin(){
+  var params=new URLSearchParams(window.location.search);
+  // Hide demo toggle, show only a homeowner login
+  var dtog=document.getElementById('dtog'); if(dtog)dtog.style.display='none';
+  var ls=document.getElementById('login-screen'); if(ls)ls.style.display='flex';
+  var app=document.getElementById('app'); if(app)app.style.display='none';
+
+  // Rebuild the login card for homeowners: single field (WO# OR phone)
+  var card=document.querySelector('.login-card');
+  if(card){
+    var title=card.querySelector('div');
+    // Replace the heading text
+    var heads=card.querySelectorAll('div');
+    card.innerHTML=''+
+      '<div style="text-align:center;margin-bottom:8px;font-family:\'Barlow Condensed\',sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#F0F5FF;">CALIFORNIA DELUXE WINDOWS</div>'+
+      '<div style="text-align:center;margin-bottom:20px;font-size:11px;color:#C9952A;font-family:\'DM Mono\',monospace;letter-spacing:2px;">HOMEOWNER PROJECT PORTAL</div>'+
+      '<div style="font-size:11px;color:#9DB0C7;margin-bottom:6px;font-family:\'DM Mono\',monospace;">Enter your Work Order # OR phone number</div>'+
+      '<input class="lin" id="hw-login-input" placeholder="e.g. WO-10001 or 8185551234" type="text" style="margin-bottom:14px;" onkeydown="if(event.key===\'Enter\')homeownerLogin()"/>'+
+      '<button class="login-btn" onclick="homeownerLogin()">VIEW MY PROJECT &rarr;</button>'+
+      '<div id="hw-login-err" style="display:none;color:#E8424A;font-size:11px;margin-top:10px;text-align:center;"></div>'+
+      '<div style="text-align:center;margin-top:16px;font-size:10px;color:#5A7290;font-family:\'DM Mono\',monospace;">California Deluxe Windows &middot; (818) 349-5566</div>';
+  }
+
+  // Prefill from the link if WO provided
+  var wo=params.get('wo');
+  if(wo){var inp=document.getElementById('hw-login-input'); if(inp)inp.value=wo;}
+}
+
+function normalizePhone(s){ return (s||'').replace(/[^0-9]/g,'').replace(/^1/,''); }
+
+function homeownerLogin(){
+  var raw=(document.getElementById('hw-login-input').value||'').trim();
+  var err=document.getElementById('hw-login-err');
+  if(!raw){ if(err){err.textContent='Please enter your Work Order # or phone number.';err.style.display='block';} return; }
+  var rawLow=raw.toLowerCase();
+  var rawPhone=normalizePhone(raw);
+  // Match against LEADS by work order OR phone
+  var match=null;
+  if(typeof LEADS!=='undefined'){
+    match=LEADS.find(function(l){
+      var wo=(l.woNum||l.id||'').toString().toLowerCase();
+      var ph=normalizePhone(l.phone);
+      return wo===rawLow || (rawPhone && ph && ph===rawPhone);
+    });
+  }
+  if(!match){
+    if(err){err.textContent='No project found. Check your Work Order # or phone number, or call (818) 349-5566.';err.style.display='block';}
+    return;
+  }
+  // Success: stash the homeowner's project and open the homeowner portal
+  window.HW_CURRENT=match;
+  var ls=document.getElementById('login-screen'); if(ls)ls.style.display='none';
+  if(typeof openHomeownerPortalFor==='function'){ openHomeownerPortalFor(match); }
+  else { var ov=document.getElementById('hw-ov'); if(ov)ov.classList.add('open'); }
+}
+
+
+function openHomeownerPortalFor(lead){
+  try{
+    var nm=document.getElementById('hw-name'); if(nm&&lead)nm.textContent=lead.name;
+    var wo=document.getElementById('hw-wo'); if(wo&&lead)wo.textContent=(lead.woNum||lead.id);
+  }catch(e){}
+  var ov=document.getElementById('hw-ov'); if(ov)ov.classList.add('open');
+}
+
+
+function hwCloseGuard(){
+  var ov=document.getElementById('hw-ov'); if(ov)ov.classList.remove('open');
+  if(isCustomerMode()){
+    var ls=document.getElementById('login-screen'); if(ls)ls.style.display='flex';
+    var app=document.getElementById('app'); if(app)app.style.display='none';
+  }
+}
+
 </script>
 
 <button class="hw-btn" onclick="document.getElementById('hw-ov').classList.add('open')">&#127968; HOMEOWNER VIEW</button>
 
-<div id="hw-ov" onclick="if(event.target===this)this.classList.remove('open')">
+<div id="hw-ov" onclick="if(event.target===this)hwCloseGuard()">
   <div class="hw-box">
     <div class="hw-frost"></div>
-    <button class="hw-x" onclick="document.getElementById('hw-ov').classList.remove('open')">&times;</button>
+    <button class="hw-x" onclick="hwCloseGuard()">&times;</button>
     <div class="hw-inner">
       <!-- Header -->
       <div style="text-align:center;margin-bottom:16px;">
@@ -1768,8 +1926,8 @@ window.addEventListener('DOMContentLoaded',function(){
       <div style="background:rgba(255,255,255,0.88);border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid #c9b06b;">
         <div style="font-size:10px;font-weight:700;color:#4e4221;margin-bottom:8px;font-family:'DM Mono',monospace;">PROJECT DETAILS</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;color:#2b2515;">
-          <div><span style="color:#726135;font-weight:600;">Homeowner:</span><br/><strong>John &amp; Sarah Smith</strong></div>
-          <div><span style="color:#726135;font-weight:600;">Work Order:</span><br/><strong>WO-10001</strong></div>
+          <div><span style="color:#726135;font-weight:600;">Homeowner:</span><br/><strong id="hw-name">John &amp; Sarah Smith</strong></div>
+          <div><span style="color:#726135;font-weight:600;">Work Order:</span><br/><strong id="hw-wo">WO-10001</strong></div>
           <div><span style="color:#726135;font-weight:600;">Windows:</span><br/><strong style="color:#1B5FAA;">6 Windows</strong></div>
           <div><span style="color:#726135;font-weight:600;">Doors:</span><br/><strong style="color:#1B5FAA;">2 Doors</strong></div>
           <div><span style="color:#726135;font-weight:600;">Product:</span><br/>Dream Series Double-Hung</div>
@@ -1906,10 +2064,10 @@ window.addEventListener('DOMContentLoaded',function(){
 <button class="qc-btn" onclick="document.getElementById('qc-ov').classList.add('open')">&#128270; QC PORTAL</button>
 
 <!-- HOMEOWNER PORTAL -->
-<div id="hw-ov" onclick="if(event.target===this)this.classList.remove('open')">
+<div id="hw-ov" onclick="if(event.target===this)hwCloseGuard()">
   <div class="hw-box">
     <div class="hw-frost"></div>
-    <button class="hw-x" onclick="document.getElementById('hw-ov').classList.remove('open')" style="color:#5a4010;">&times;</button>
+    <button class="hw-x" onclick="hwCloseGuard()" style="color:#5a4010;">&times;</button>
     <div class="hw-inner">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;letter-spacing:1px;color:#2b2515;">CALIFORNIA DELUXE WINDOWS</div>
@@ -1918,8 +2076,8 @@ window.addEventListener('DOMContentLoaded',function(){
       <div style="background:rgba(255,255,255,0.88);border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid #c9b06b;">
         <div style="font-size:10px;font-weight:700;color:#4e4221;margin-bottom:8px;font-family:'DM Mono',monospace;">PROJECT DETAILS</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;color:#2b2515;">
-          <div><span style="color:#726135;font-weight:600;">Homeowner:</span><br/><strong>John &amp; Sarah Smith</strong></div>
-          <div><span style="color:#726135;font-weight:600;">Work Order:</span><br/><strong>WO-10001</strong></div>
+          <div><span style="color:#726135;font-weight:600;">Homeowner:</span><br/><strong id="hw-name">John &amp; Sarah Smith</strong></div>
+          <div><span style="color:#726135;font-weight:600;">Work Order:</span><br/><strong id="hw-wo">WO-10001</strong></div>
           <div><span style="color:#726135;font-weight:600;">Windows:</span><br/><strong style="color:#1B5FAA;">6 Windows</strong></div>
           <div><span style="color:#726135;font-weight:600;">Doors:</span><br/><strong style="color:#1B5FAA;">2 Doors</strong></div>
           <div><span style="color:#726135;font-weight:600;">Product:</span><br/>Dream Series Sliding Door</div>
@@ -2093,7 +2251,27 @@ window.addEventListener('DOMContentLoaded',function(){
     </div>
   </div>
 </div>
-<style>#cust-login-ov.open{display:flex !important;}</style>
+<style>#cust-login-ov.open{display:flex !important;}
+/* ===== HOLIDAY THEMES ===== */
+#holiday-banner{display:none;align-items:center;justify-content:center;gap:10px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;color:#fff;text-align:center;position:relative;overflow:hidden;}
+body.hol-july4 #holiday-banner{display:flex;background:linear-gradient(90deg,#B22234 0%,#B22234 33%,#FFFFFF 33%,#FFFFFF 66%,#3C3B6E 66%,#3C3B6E 100%);color:#fff;text-shadow:0 1px 3px #000;}
+body.hol-juneteenth #holiday-banner{display:flex;background:linear-gradient(90deg,#E51B24,#000000 50%,#1B7A3D);color:#FFD700;}
+body.hol-christmas #holiday-banner{display:flex;background:linear-gradient(90deg,#C8102E,#0B6623);color:#FFD700;}
+body.hol-hanukkah #holiday-banner{display:flex;background:linear-gradient(90deg,#0038B8,#FFFFFF 50%,#0038B8);color:#0038B8;text-shadow:0 0 2px #fff;}
+body.hol-newyear #holiday-banner{display:flex;background:linear-gradient(90deg,#1A1A1A,#C9952A,#1A1A1A);color:#FFD700;}
+body.hol-rosh #holiday-banner{display:flex;background:linear-gradient(90deg,#7B1E22,#C9952A);color:#FFF8E7;}
+body.hol-yom #holiday-banner{display:flex;background:linear-gradient(90deg,#FFFFFF,#0038B8,#FFFFFF);color:#0A2A5E;}
+body.hol-thanksgiving #holiday-banner{display:flex;background:linear-gradient(90deg,#8B4513,#D2691E,#C9952A);color:#FFF8E7;}
+body.hol-memorial #holiday-banner{display:flex;background:linear-gradient(90deg,#3C3B6E,#B22234);color:#fff;}
+body.hol-labor #holiday-banner{display:flex;background:linear-gradient(90deg,#1B5FAA,#0D3060);color:#fff;}
+body.hol-mlk #holiday-banner{display:flex;background:linear-gradient(90deg,#2C1810,#C9952A);color:#FFF8E7;}
+body.hol-veterans #holiday-banner{display:flex;background:linear-gradient(90deg,#B22234,#FFFFFF 50%,#3C3B6E);color:#1A1A1A;text-shadow:0 0 2px #fff;}
+.hol-emoji{font-size:15px;}
+#theme-menu{display:none;position:absolute;top:42px;right:14px;background:var(--navyCard);border:1px solid var(--navyBorder);border-radius:10px;padding:6px;z-index:950;box-shadow:0 12px 40px #000000a0;max-height:70vh;overflow-y:auto;width:200px;}
+#theme-menu.open{display:block;}
+.theme-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--white);font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.theme-opt:hover{background:var(--navyHover);}
+</style>
 
 </body>
 </html>
