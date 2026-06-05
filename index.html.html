@@ -1892,9 +1892,9 @@ function setupCustomerLogin(){
       '<div style="text-align:center;margin-top:16px;font-size:10px;color:#5A7290;font-family:\'DM Mono\',monospace;">California Deluxe Windows &middot; (818) 349-5566</div>';
   }
 
-  // Prefill from the link if WO provided
+  // Prefill from the link if WO provided, then auto-attempt login (one-tap / zero-tap)
   var wo=params.get('wo');
-  if(wo){var inp=document.getElementById('hw-login-input'); if(inp)inp.value=wo;}
+  if(wo){var inp=document.getElementById('hw-login-input'); if(inp)inp.value=wo; setTimeout(function(){ if(typeof homeownerLogin==='function') homeownerLogin(); }, 60);}
 }
 
 function normalizePhone(s){ return (s||'').replace(/[^0-9]/g,'').replace(/^1/,''); }
@@ -2355,5 +2355,24 @@ body.hol-veterans #holiday-banner{display:flex;background:linear-gradient(90deg,
 .theme-opt:hover{background:var(--navyHover);}
 </style>
 
+<script>
+(function(){
+  try{
+    var p=new URLSearchParams(window.location.search);
+    if(p.get('mode')==='customer'){
+      // Run now if DOM ready, else as soon as it is — but do NOT depend on other handlers
+      var go=function(){ if(typeof setupCustomerLogin==='function'){ setupCustomerLogin(); }
+        var app=document.getElementById('app'); if(app)app.style.display='none';
+        var ls=document.getElementById('login-screen'); if(ls)ls.style.display='flex';
+        var dtog=document.getElementById('dtog'); if(dtog)dtog.style.display='none';
+      };
+      if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',go); }
+      else { go(); }
+      // Extra safety: re-assert after everything else finishes
+      window.addEventListener('load', go);
+    }
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
