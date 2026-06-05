@@ -1055,6 +1055,14 @@ function createLead(){
   const wo=document.getElementById('nl-wo')?.value?.trim()||'WO-'+Date.now().toString().slice(-5);
   const lead={id,woNum:wo,name,phone,email:document.getElementById('nl-em')?.value||'',address:document.getElementById('nl-ad')?.value||'',city,zip:document.getElementById('nl-zi')?.value||'',source:document.getElementById('nl-sr')?.value||'Door Knock',entity:document.getElementById('nl-en')?.value||'CDW',product:document.getElementById('nl-pr')?.value||'TBD',value:parseFloat(document.getElementById('nl-va')?.value)||0,rep:document.getElementById('nl-re')?.value||'Unassigned',notes:document.getElementById('nl-no')?.value||'',status:'new_lead',hoa:hoaVal,hoaStatus:hoaVal?'pending':'none',nextAppt:'—',created:nowTS()};
   LEADS.push(lead);DOCS[id]=[];NOTES[id]=[];
+  try{ cdwSave(); }catch(e){}
+  // Save to the shared cloud so every device/staff sees it
+  if(typeof cdwCloudSaveLead==='function'){
+    cdwCloudSaveLead(lead).then(function(ok){
+      if(ok){ try{ fireNotif('Synced to cloud: '+name+' ('+wo+')','success'); }catch(e){} }
+      else { try{ fireNotif('Saved locally — cloud sync will retry','info'); }catch(e){} }
+    });
+  }
   document.querySelector('.modal-overlay')?.remove();
   fireNotif('New lead: '+name+' ('+wo+') Rep: '+lead.rep,'success');
   if(hoaVal)fireNotif('HOA Required for '+name+' — Joyce Bosnoyan notified.','info');
@@ -1429,10 +1437,10 @@ async function confirmUpload(){
     try{
       const fd=new FormData();
       fd.append('file',f);
-      const token=localStorage.getItem('cdw_auth_token')||'';
+      const token=(typeof cdwAuthToken==='function'?cdwAuthToken():(localStorage.getItem('cdw_auth_token')||'cdw-staff'));
       const resp=await fetch('https://probuild-portal.wn.r.appspot.com/api/upload',{
         method:'POST',
-        headers:token?{'Authorization':'Bearer '+token}:{},
+        headers:{'Authorization':'Bearer '+token},
         body:fd
       });
       if(!resp.ok){
@@ -1767,6 +1775,15 @@ window.addEventListener('DOMContentLoaded',function(){
   toggleDemo();
   // Load any saved real data (survives refresh/logout)
   try{if(cdwLoad()){demoMode=false;var b=document.getElementById('demo-badge');if(b)b.style.display='none';}}catch(e){}
+  // Pull shared leads from the cloud so every device shows the same data
+  try{
+    if(typeof cdwCloudLoadLeads==='function'){
+      cdwCloudLoadLeads().then(function(ok){
+        if(ok){ demoMode=false; var bb=document.getElementById('demo-badge'); if(bb)bb.style.display='none';
+          try{ if(typeof nav==='function') nav('dashboard'); }catch(e){} }
+      });
+    }
+  }catch(e){}
   nav('dashboard');
   populateUserSwitcher();
 });
@@ -1905,24 +1922,37 @@ function homeownerLogin(){
   if(!raw){ if(err){err.textContent='Please enter your Work Order # or phone number.';err.style.display='block';} return; }
   var rawLow=raw.toLowerCase();
   var rawPhone=normalizePhone(raw);
-  // Match against LEADS by work order OR phone
-  var match=null;
-  if(typeof LEADS!=='undefined'){
-    match=LEADS.find(function(l){
+  function openWith(match){
+    window.HW_CURRENT=match;
+    var ls=document.getElementById('login-screen'); if(ls)ls.style.display='none';
+    if(typeof openHomeownerPortalFor==='function'){ openHomeownerPortalFor(match); }
+    else { var ov=document.getElementById('hw-ov'); if(ov)ov.classList.add('open'); }
+  }
+  function localMatch(){
+    if(typeof LEADS==='undefined') return null;
+    return LEADS.find(function(l){
       var wo=(l.woNum||l.id||'').toString().toLowerCase();
       var ph=normalizePhone(l.phone);
       return wo===rawLow || (rawPhone && ph && ph===rawPhone);
-    });
+    }) || null;
   }
-  if(!match){
+  function fail(){
     if(err){err.textContent='No project found. Check your Work Order # or phone number, or call (818) 349-5566.';err.style.display='block';}
+  }
+  // 1) Try the shared cloud first (finds projects created on any device)
+  if(typeof cdwCloudLookupProject==='function'){
+    if(err){err.textContent='Looking up your project…';err.style.display='block';}
+    cdwCloudLookupProject(raw).then(function(cloudLead){
+      if(cloudLead){ if(err)err.style.display='none'; openWith(cloudLead); return; }
+      var lm=localMatch();
+      if(lm){ if(err)err.style.display='none'; openWith(lm); } else { fail(); }
+    });
     return;
   }
-  // Success: stash the homeowner's project and open the homeowner portal
-  window.HW_CURRENT=match;
-  var ls=document.getElementById('login-screen'); if(ls)ls.style.display='none';
-  if(typeof openHomeownerPortalFor==='function'){ openHomeownerPortalFor(match); }
-  else { var ov=document.getElementById('hw-ov'); if(ov)ov.classList.add('open'); }
+  // 2) Offline fallback: local only
+  var match=localMatch();
+  if(!match){ fail(); return; }
+  openWith(match);
 }
 
 
@@ -1971,6 +2001,57 @@ function cdwLoad(){
 window.addEventListener('beforeunload', cdwSave);
 // Periodic safety save every 20s
 setInterval(cdwSave, 20000);
+
+/* ============================================================
+   PROBUILD CLOUD BACKEND (Google App Engine + Datastore)
+   Shared lead data across all devices. localStorage = offline cache.
+   ============================================================ */
+var CDW_API_BASE = 'https://probuild-portal.wn.r.appspot.com';
+function cdwAuthToken(){
+  // Any non-empty token passes server auth. Use logged-in user if available.
+  try{ if(typeof CU!=='undefined' && CU && CU.username) return CU.username; }catch(e){}
+  try{ var t=localStorage.getItem('cdw_auth_token'); if(t) return t; }catch(e){}
+  return 'cdw-staff';
+}
+// Push a single lead up to the cloud (create or update). Non-blocking.
+function cdwCloudSaveLead(lead){
+  if(!lead || !lead.woNum) return Promise.resolve(false);
+  return fetch(CDW_API_BASE+'/api/leads',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+cdwAuthToken()},
+    body:JSON.stringify(lead)
+  }).then(function(r){return r.ok;}).catch(function(){return false;});
+}
+// Pull ALL leads from the cloud and merge into local LEADS (cloud wins by woNum).
+function cdwCloudLoadLeads(){
+  return fetch(CDW_API_BASE+'/api/leads',{
+    headers:{'Authorization':'Bearer '+cdwAuthToken()}
+  }).then(function(r){ return r.ok ? r.json() : null; })
+  .then(function(cloud){
+    if(!Array.isArray(cloud)) return false;
+    if(typeof LEADS==='undefined') LEADS=[];
+    var byWo={};
+    LEADS.forEach(function(l){ byWo[(l.woNum||l.id||'').toString().toLowerCase()]=l; });
+    cloud.forEach(function(cl){
+      var k=(cl.woNum||'').toString().toLowerCase();
+      if(!k) return;
+      if(byWo[k]){ for(var p in cl){ if(cl[p]!==undefined && cl[p]!=='' ) byWo[k][p]=cl[p]; } }
+      else { LEADS.push(cl); byWo[k]=cl; if(typeof DOCS!=='undefined'&&!DOCS[cl.id||cl.woNum])DOCS[cl.id||cl.woNum]=cl.docs||[]; }
+    });
+    try{ cdwSave(); }catch(e){}
+    try{ if(typeof rMktg==='function') rMktg(); }catch(e){}
+    return true;
+  }).catch(function(){return false;});
+}
+// Public homeowner lookup by Work Order # OR phone (no auth). Returns lead or null.
+function cdwCloudLookupProject(value){
+  var v=encodeURIComponent((value||'').toString().trim());
+  if(!v) return Promise.resolve(null);
+  return fetch(CDW_API_BASE+'/api/lead/'+v)
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(lead){ return (lead && lead.woNum) ? lead : null; })
+    .catch(function(){ return null; });
+}
 
 
 // Bulletproof customer-mode backup: runs after full load
