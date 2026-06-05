@@ -466,7 +466,7 @@ function canOpsNotes(lead){
   return false;
 }
 
-function fireNotif(msg,type='success'){
+function fireNotif(msg,type='success'){try{if(typeof cdwSave==='function')cdwSave();}catch(e){}
   NOTIFS.unshift({msg,type,time:nowTS(),read:false});
   updateBadges();
   const colors={success:['#0A2818','#1DB954'],warning:['#2A1500','#F5842A'],danger:['#2A0A0C','#E8424A'],info:['#0D3060','#1B5FAA']};
@@ -599,7 +599,7 @@ function showSendCustomerLogin(){
     if(url&&prev&&urlEl){prev.style.display='block';urlEl.textContent=url;}else if(prev)prev.style.display='none';
   };
   document.getElementById('scl-copy').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}navigator.clipboard.writeText(url).then(function(){fireNotif('Link copied!','success');});ov.remove();};
-  document.getElementById('scl-sms').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});var msg='Hi '+(l?l.name.split(' ')[0]:'there')+', your CDW portal: '+url+' Log in with your Work Order # or phone number.';window.open('sms:'+(l&&l.phone?encodeURIComponent(l.phone):'')+' ?body='+encodeURIComponent(msg));ov.remove();};
+  document.getElementById('scl-sms').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});var msg='Hi '+(l?l.name.split(' ')[0]:'there')+', your CDW portal: '+url+' Log in with your Work Order #: '+(l?(l.woNum||l.id):'')+(l&&l.phone?' or your phone: '+l.phone:'')+'.';window.open('sms:'+(l&&l.phone?encodeURIComponent(l.phone):'')+' ?body='+encodeURIComponent(msg));ov.remove();};
   document.getElementById('scl-email').onclick=function(){var url=getUrl();if(!url){alert('Select project first.');return;}var sel=document.getElementById('scl-project');var l=LEADS.find(function(l){return l.id===sel.value;});window.open('mailto:'+(l&&l.email?encodeURIComponent(l.email):'')+' ?subject=Your+CDW+Portal&body='+encodeURIComponent('Hi '+(l?l.name.split(' ')[0]:'there')+',\n\nYour CDW portal: '+url+'\n\nLog in with your Work Order # or phone number.'));ov.remove();};
 }
 
@@ -1406,19 +1406,53 @@ function showUploadDoc(projectId){
   let popts=LEADS.filter(l=>!['new_lead','canceled'].includes(l.status)).map(l=>'<option value="'+l.id+'"'+(l.id===projectId?' selected':'')+'>'+l.name+' ('+(l.woNum||l.id)+')</option>').join('');
   let tOpts=DOC_TYPES.map(t=>'<option>'+t+'</option>').join('');
   let uopts=Object.values(USERS).map(u=>'<option'+(u.name===CU?.name?' selected':'')+'>'+u.name+'</option>').join('');
-  document.body.insertAdjacentHTML('beforeend','<div class="modal-overlay" onclick="this.remove()"><div class="modal" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div style="color:#F0F5FF;font-family:\'Barlow Condensed\',sans-serif;font-size:19px;font-weight:800;letter-spacing:.06em;">UPLOAD DOCUMENT</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="background:none;border:none;color:#7A8FA8;cursor:pointer;font-size:17px;">&times;</button></div><div class="fg"><label class="fl">PROJECT</label><select id="up-p" class="fi">'+popts+'</select></div><div class="fg"><label class="fl">DOCUMENT TYPE</label><select id="up-t" class="fi">'+tOpts+'</select></div><div class="fg"><label class="fl">FILE NAME</label><input id="up-n" class="fi" placeholder="e.g. Smith_Contract_Signed.pdf"/></div><div class="fg"><label class="fl">FILE SIZE (optional)</label><input id="up-s" class="fi" placeholder="e.g. 2.4 MB"/></div><div class="fg"><label class="fl">UPLOADED BY</label><select id="up-b" class="fi">'+uopts+'</select></div><div style="border:2px dashed #162540;border-radius:10px;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;" onmouseenter="this.style.borderColor=\'#1B5FAA\'" onmouseleave="this.style.borderColor=\'#162540\'"><div style="font-size:28px;opacity:.4;margin-bottom:5px;">&#128206;</div><div style="color:#7A8FA8;font-size:11px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:.06em;">SELECT FILE TO UPLOAD</div><div style="color:#3A4F68;font-size:9px;margin-top:2px;">PDF, JPG, PNG, ZIP, DWG</div></div><div style="padding:7px 11px;background:#0A2818;border-radius:8px;border:1px solid #1DB95440;margin-bottom:13px;"><div style="color:#1DB954;font-size:9px;font-family:\'DM Mono\',monospace;">Timestamp auto-logged: '+nowTS()+'</div></div><div style="display:flex;gap:7px;"><button class="btn btn-ghost btn-md" onclick="this.closest(\'.modal-overlay\').remove()" style="flex:1;">CANCEL</button><button class="btn btn-primary btn-md" onclick="confirmUpload();this.closest(\'.modal-overlay\').remove();" style="flex:2;">&#128206; UPLOAD DOCUMENT</button></div></div></div>');
+  document.body.insertAdjacentHTML('beforeend','<div class="modal-overlay" onclick="this.remove()"><div class="modal" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><div style="color:#F0F5FF;font-family:\'Barlow Condensed\',sans-serif;font-size:19px;font-weight:800;letter-spacing:.06em;">UPLOAD DOCUMENT</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="background:none;border:none;color:#7A8FA8;cursor:pointer;font-size:17px;">&times;</button></div><div class="fg"><label class="fl">PROJECT</label><select id="up-p" class="fi">'+popts+'</select></div><div class="fg"><label class="fl">DOCUMENT TYPE</label><select id="up-t" class="fi">'+tOpts+'</select></div><div class="fg"><label class="fl">FILE NAME</label><input id="up-n" class="fi" placeholder="e.g. Smith_Contract_Signed.pdf"/></div><div class="fg"><label class="fl">CHOOSE FILE (uploads to ProBuild cloud)</label><input id="up-file" type="file" class="fi"/></div><div class="fg"><label class="fl">FILE SIZE (optional)</label><input id="up-s" class="fi" placeholder="e.g. 2.4 MB"/></div><div class="fg"><label class="fl">UPLOADED BY</label><select id="up-b" class="fi">'+uopts+'</select></div><div style="border:2px dashed #162540;border-radius:10px;padding:24px;text-align:center;cursor:pointer;margin-bottom:12px;" onmouseenter="this.style.borderColor=\'#1B5FAA\'" onmouseleave="this.style.borderColor=\'#162540\'"><div style="font-size:28px;opacity:.4;margin-bottom:5px;">&#128206;</div><div style="color:#7A8FA8;font-size:11px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:.06em;">SELECT FILE TO UPLOAD</div><div style="color:#3A4F68;font-size:9px;margin-top:2px;">PDF, JPG, PNG, ZIP, DWG</div></div><div style="padding:7px 11px;background:#0A2818;border-radius:8px;border:1px solid #1DB95440;margin-bottom:13px;"><div style="color:#1DB954;font-size:9px;font-family:\'DM Mono\',monospace;">Timestamp auto-logged: '+nowTS()+'</div></div><div style="display:flex;gap:7px;"><button class="btn btn-ghost btn-md" onclick="this.closest(\'.modal-overlay\').remove()" style="flex:1;">CANCEL</button><button class="btn btn-primary btn-md" onclick="confirmUpload();this.closest(\'.modal-overlay\').remove();" style="flex:2;">&#128206; UPLOAD DOCUMENT</button></div></div></div>');
 }
-function confirmUpload(){
+async function confirmUpload(){
   const pid=document.getElementById('up-p')?.value;
   const type=document.getElementById('up-t')?.value||'Contract';
-  const name=document.getElementById('up-n')?.value||'Document.pdf';
-  const size=document.getElementById('up-s')?.value||'—';
+  let name=document.getElementById('up-n')?.value||'Document.pdf';
+  let size=document.getElementById('up-s')?.value||'\u2014';
   const by=document.getElementById('up-b')?.value||CU?.name||'Staff';
   const user=Object.values(USERS).find(u=>u.name===by);
-  const icons={Contract:'📄','Photo — Before':'📷','Photo — After':'📷','Photo — Site':'📷','Plan / Drawing':'📐',Permit:'📋','Installation Sign-Off':'✅','Warranty Certificate':'🛡','HOA Correspondence':'🏛','Change Order':'✏','Measurement Report':'📏','Financing Application':'💳',Other:'📁'};
+  const icons={Contract:'\ud83d\udcc4','Photo \u2014 Before':'\ud83d\udcf7','Photo \u2014 After':'\ud83d\udcf7','Photo \u2014 Site':'\ud83d\udcf7','Plan / Drawing':'\ud83d\udcd0',Permit:'\ud83d\udccb','Installation Sign-Off':'\u2705','Warranty Certificate':'\ud83d\udee1','HOA Correspondence':'\ud83c\udfdb','Change Order':'\u270f','Measurement Report':'\ud83d\udccf','Financing Application':'\ud83d\udcb3',Other:'\ud83d\udcc1'};
+
+  const fileInput=document.getElementById('up-file');
+  const hasFile=fileInput&&fileInput.files&&fileInput.files.length>0;
+  let filePath=null;
+
+  if(hasFile){
+    const f=fileInput.files[0];
+    if(!name||name==='Document.pdf')name=f.name;
+    size=(f.size/1048576).toFixed(2)+' MB';
+    fireNotif('Uploading '+f.name+' to ProBuild cloud\u2026','info');
+    try{
+      const fd=new FormData();
+      fd.append('file',f);
+      const token=localStorage.getItem('cdw_auth_token')||'';
+      const resp=await fetch('https://probuild-portal.wn.r.appspot.com/api/upload',{
+        method:'POST',
+        headers:token?{'Authorization':'Bearer '+token}:{},
+        body:fd
+      });
+      if(!resp.ok){
+        let m='Upload failed ('+resp.status+')';
+        try{const e=await resp.json();m=e.error||m;}catch(_){}
+        throw new Error(m);
+      }
+      const data=await resp.json();
+      filePath=data.filePath||data.path||data.name||f.name;
+      fireNotif('File stored in cloud: '+filePath,'success');
+    }catch(err){
+      fireNotif('Cloud upload error: '+err.message+' (record saved without file)','error');
+    }
+  }
+
   if(!DOCS[pid])DOCS[pid]=[];
-  DOCS[pid].push({id:'D'+Date.now(),name,type,icon:icons[type]||'📄',uploadedBy:by,role:user?.title||'Staff',date:new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),ts:nowTS(),size});
-  fireNotif('Uploaded: '+name+' ('+type+') — '+by+' &middot; '+nowTS(),'success');rDocs();
+  DOCS[pid].push({id:'D'+Date.now(),name,type,icon:icons[type]||'\ud83d\udcc4',uploadedBy:by,role:user?.title||'Staff',date:new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),ts:nowTS(),size,filePath:filePath});
+  fireNotif('Uploaded: '+name+' ('+type+') \u2014 '+by+' \u00b7 '+nowTS(),'success');
+  rDocs();
+  var ov=document.querySelector('.modal-overlay');if(ov)ov.remove();
 }
 
 // ── SCHEDULING ─────────────────────────────────────────
@@ -1731,6 +1765,8 @@ window.addEventListener('DOMContentLoaded',function(){
   if(cn)cn.style.display='none';
   // DEMO MODE ON by default
   toggleDemo();
+  // Load any saved real data (survives refresh/logout)
+  try{if(cdwLoad()){demoMode=false;var b=document.getElementById('demo-badge');if(b)b.style.display='none';}}catch(e){}
   nav('dashboard');
   populateUserSwitcher();
 });
@@ -1906,6 +1942,52 @@ function hwCloseGuard(){
     var app=document.getElementById('app'); if(app)app.style.display='none';
   }
 }
+
+
+// ── DATA PERSISTENCE (localStorage, per-device) ──────────────
+function cdwSave(){
+  try{
+    var data={LEADS:LEADS,FR:FR,COS:COS,DOCS:DOCS,NOTES:NOTES,COMMS:(typeof COMMS!=='undefined'?COMMS:{}),SERVICE_TICKETS:(typeof SERVICE_TICKETS!=='undefined'?SERVICE_TICKETS:[]),NOTIFS:(typeof NOTIFS!=='undefined'?NOTIFS:[])};
+    localStorage.setItem('cdw_probuild_data', JSON.stringify(data));
+  }catch(e){}
+}
+function cdwLoad(){
+  try{
+    var raw=localStorage.getItem('cdw_probuild_data');
+    if(!raw)return false;
+    var d=JSON.parse(raw);
+    if(d.LEADS)LEADS=d.LEADS;
+    if(d.FR)FR=d.FR;
+    if(d.COS)COS=d.COS;
+    if(d.DOCS)DOCS=d.DOCS;
+    if(d.NOTES)NOTES=d.NOTES;
+    if(d.COMMS&&typeof COMMS!=='undefined')COMMS=d.COMMS;
+    if(d.SERVICE_TICKETS&&typeof SERVICE_TICKETS!=='undefined')SERVICE_TICKETS=d.SERVICE_TICKETS;
+    if(d.NOTIFS&&typeof NOTIFS!=='undefined')NOTIFS=d.NOTIFS;
+    return true;
+  }catch(e){return false;}
+}
+// Auto-save whenever data likely changed: wrap on key events
+window.addEventListener('beforeunload', cdwSave);
+// Periodic safety save every 20s
+setInterval(cdwSave, 20000);
+
+
+// Bulletproof customer-mode backup: runs after full load
+window.addEventListener('load', function(){
+  try{
+    if(new URLSearchParams(window.location.search).get('mode')==='customer'){
+      var inp=document.getElementById('hw-login-input');
+      if(!inp){ // homeowner login not built yet -> build it now
+        if(typeof setupCustomerLogin==='function') setupCustomerLogin();
+      }
+      // ensure staff app is hidden
+      var app=document.getElementById('app'); if(app)app.style.display='none';
+      var ls=document.getElementById('login-screen'); if(ls)ls.style.display='flex';
+      var dtog=document.getElementById('dtog'); if(dtog)dtog.style.display='none';
+    }
+  }catch(e){}
+});
 
 </script>
 
