@@ -814,7 +814,11 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('su-av').textContent=CU.initials;
   const cnAL=document.getElementById('nb-commission');
   if(cnAL)cnAL.style.display='none';
-  toggleDemo();
+  // Real mode is the default. Demo is opt-in via the toggle button.
+  demoMode=false;
+  var _db=document.getElementById('demo-badge');if(_db)_db.style.display='none';
+  var _dl=document.getElementById('dlbl');if(_dl)_dl.textContent='DEMO OFF';
+  var _dt=document.getElementById('dtog');if(_dt)_dt.classList.remove('on');
   nav('dashboard');
   if(typeof populateUserSwitcher==='function')populateUserSwitcher();
 });
@@ -1771,8 +1775,7 @@ window.addEventListener('DOMContentLoaded',function(){
   // Commission nav hidden from manny
   const cn=document.getElementById('nb-commission');
   if(cn)cn.style.display='none';
-  // DEMO MODE ON by default
-  toggleDemo();
+  // Real mode is default; demo is opt-in via the toggle button.
   // Load any saved real data (survives refresh/logout)
   try{if(cdwLoad()){demoMode=false;var b=document.getElementById('demo-badge');if(b)b.style.display='none';}}catch(e){}
   // Pull shared leads from the cloud so every device shows the same data
@@ -1906,7 +1909,8 @@ function setupCustomerLogin(){
       '<input class="lin" id="hw-login-input" placeholder="e.g. WO-10001 or 8185551234" type="text" style="margin-bottom:14px;" onkeydown="if(event.key===\'Enter\')homeownerLogin()"/>'+
       '<button class="login-btn" onclick="homeownerLogin()">VIEW MY PROJECT &rarr;</button>'+
       '<div id="hw-login-err" style="display:none;color:#E8424A;font-size:11px;margin-top:10px;text-align:center;"></div>'+
-      '<div style="text-align:center;margin-top:16px;font-size:10px;color:#5A7290;font-family:\'DM Mono\',monospace;">California Deluxe Windows &middot; (818) 349-5566</div>';
+      '<div style="text-align:center;margin-top:16px;font-size:10px;color:#5A7290;font-family:\'DM Mono\',monospace;">California Deluxe Windows &middot; (818) 349-5566</div>'+
+      '<div style="text-align:center;margin-top:6px;font-size:9px;color:#2E9CCA;font-family:\'DM Mono\',monospace;">portal build v2 &middot; cloud-connected</div>';
   }
 
   // Prefill from the link if WO provided, then auto-attempt login (one-tap / zero-tap)
@@ -2015,8 +2019,9 @@ function cdwAuthToken(){
 }
 // Push a single lead up to the cloud (create or update). Non-blocking.
 function cdwCloudSaveLead(lead){
+  var base=(typeof CDW_API_BASE!=='undefined'&&CDW_API_BASE)?CDW_API_BASE:'https://probuild-portal.wn.r.appspot.com';
   if(!lead || !lead.woNum) return Promise.resolve(false);
-  return fetch(CDW_API_BASE+'/api/leads',{
+  return fetch(base+'/api/leads',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+cdwAuthToken()},
     body:JSON.stringify(lead)
@@ -2024,30 +2029,43 @@ function cdwCloudSaveLead(lead){
 }
 // Pull ALL leads from the cloud and merge into local LEADS (cloud wins by woNum).
 function cdwCloudLoadLeads(){
-  return fetch(CDW_API_BASE+'/api/leads',{
+  var base=(typeof CDW_API_BASE!=='undefined'&&CDW_API_BASE)?CDW_API_BASE:'https://probuild-portal.wn.r.appspot.com';
+  try{ if(typeof fireNotif==='function') fireNotif('☁ Contacting backend…','info'); }catch(e){}
+  return fetch(base+'/api/leads',{
     headers:{'Authorization':'Bearer '+cdwAuthToken()}
-  }).then(function(r){ return r.ok ? r.json() : null; })
+  }).then(function(r){
+    if(!r.ok){ try{ if(typeof fireNotif==='function') fireNotif('☁ Backend returned HTTP '+r.status,'warning'); }catch(e){} return null; }
+    return r.json();
+  })
   .then(function(cloud){
-    if(!Array.isArray(cloud)) return false;
+    if(!Array.isArray(cloud)){ try{ if(typeof fireNotif==='function') fireNotif('☁ Backend reply was not a lead list.','warning'); }catch(e){} return false; }
     if(typeof LEADS==='undefined') LEADS=[];
     var byWo={};
     LEADS.forEach(function(l){ byWo[(l.woNum||l.id||'').toString().toLowerCase()]=l; });
     cloud.forEach(function(cl){
       var k=(cl.woNum||'').toString().toLowerCase();
       if(!k) return;
+      // Backend represents change orders as a nested object; the UI keys off status.
+      // Translate a flagged CO into the status the dashboard/alerts already render.
+      if(cl.changeOrder && cl.changeOrder.status==='flagged' && cl.status!=='change_order_complete'){ cl.status='change_order_needed'; }
       if(byWo[k]){ for(var p in cl){ if(cl[p]!==undefined && cl[p]!=='' ) byWo[k][p]=cl[p]; } }
       else { LEADS.push(cl); byWo[k]=cl; if(typeof DOCS!=='undefined'&&!DOCS[cl.id||cl.woNum])DOCS[cl.id||cl.woNum]=cl.docs||[]; }
     });
     try{ cdwSave(); }catch(e){}
-    try{ if(typeof rMktg==='function') rMktg(); }catch(e){}
+    try{ if(typeof fireNotif==='function') fireNotif('☁ Loaded '+cloud.length+' leads from backend.','success'); }catch(e){}
+    try{ if(typeof nav==='function') nav(typeof curMod!=='undefined'?curMod:'dashboard'); else if(typeof rMktg==='function') rMktg(); }catch(e){}
     return true;
-  }).catch(function(){return false;});
+  }).catch(function(err){
+    try{ if(typeof fireNotif==='function') fireNotif('☁ Fetch failed: '+(err&&err.message?err.message:err),'error'); }catch(e){}
+    return false;
+  });
 }
 // Public homeowner lookup by Work Order # OR phone (no auth). Returns lead or null.
 function cdwCloudLookupProject(value){
+  var base=(typeof CDW_API_BASE!=='undefined'&&CDW_API_BASE)?CDW_API_BASE:'https://probuild-portal.wn.r.appspot.com';
   var v=encodeURIComponent((value||'').toString().trim());
   if(!v) return Promise.resolve(null);
-  return fetch(CDW_API_BASE+'/api/lead/'+v)
+  return fetch(base+'/api/lead/'+v)
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(lead){ return (lead && lead.woNum) ? lead : null; })
     .catch(function(){ return null; });
@@ -2453,6 +2471,38 @@ body.hol-veterans #holiday-banner{display:flex;background:linear-gradient(90deg,
       window.addEventListener('load', go);
     }
   }catch(e){}
+})();
+</script>
+
+<script>
+/* ── STARTUP ERROR CATCHER ────────────────────────────────────────────
+   If anything throws at load (before or during startup), this paints the
+   real message + line + stack as a red bar at the bottom of the page.
+   Copy that text verbatim — it points to the exact line to fix. */
+(function(){
+  function paint(msg, src, line, col, stack){
+    try{
+      var bar=document.getElementById('__err_bar');
+      if(!bar){
+        bar=document.createElement('div');
+        bar.id='__err_bar';
+        bar.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'+
+          'background:#7a0010;color:#fff;font:12px/1.5 monospace;padding:10px 14px;'+
+          'white-space:pre-wrap;word-break:break-word;max-height:45vh;overflow:auto;'+
+          'box-shadow:0 -4px 18px rgba(0,0,0,.5);border-top:2px solid #ff5160;';
+        (document.body||document.documentElement).appendChild(bar);
+      }
+      bar.textContent='\u26A0 '+msg+'\n@ '+(src||location.href)+' line '+line+':'+col+
+        (stack?('\n'+stack):'');
+    }catch(_){}
+  }
+  window.addEventListener('error', function(e){
+    paint(e.message, e.filename, e.lineno, e.colno, e.error&&e.error.stack);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var r=e.reason;
+    paint('Unhandled promise rejection: '+(r&&r.message||r), location.href, '?', '?', r&&r.stack);
+  });
 })();
 </script>
 </body>
